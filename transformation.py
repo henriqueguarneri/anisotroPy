@@ -7,10 +7,12 @@ import matplotlib.pyplot as plt
 
 class Transformation(object):
 
-    def __int__(self, basepath, basegrid):
+    def __init__(self, basepath, basegrid, msp=1000, st = 0.0001):
 
         self.basepath = basepath.basepath
         self.basegrid = basegrid.basegrid
+        self.maximum_search_parameter = msp
+        self.search_tolerance = st
         self.bp = None
         self.vbp = None
         self.pbc = None
@@ -23,6 +25,15 @@ class Transformation(object):
         """
         self.bp = cdist(self.basepath[['E','N']].as_matrix(), self.basegrid[['E','N']].as_matrix())
 
+    def calculate_vbp_old(self):
+        
+        vbpX = cdist(self.basepath[['E']].as_matrix(), self.basegrid[['E']].as_matrix(),lambda u, v: u-v)/self.bp
+        vbpY = cdist(self.basepath[['N']].as_matrix(), self.basegrid[['N']].as_matrix(),lambda u, v: u-v)/self.bp
+        a=vbpX
+        b=vbpY
+        self.vbp = np.dstack([a.ravel(),b.ravel()])[0].reshape(1192L,31409L,2)
+
+    
     def calculate_vbp(self):
         """ 
         :param self: vbp (vector bp)
@@ -31,25 +42,32 @@ class Transformation(object):
 
         try:
             a = np.stack([self.basepath[['E', 'N']].as_matrix()]*len(self.basegrid))
-            b = np.stack([self.basegrid[['E', 'N']].as_matrix()]*len(self.basepath)).reshape(a.shape)
+            b = np.stack([self.basegrid[['E', 'N']].as_matrix()]*len(self.basepath)).reshape(31409,1192,2)
 
+            self.a = a
+            self.b = b
             # a little magic
             c = pd.DataFrame(np.vstack(a-b))
-            c[0] = c[0]/ np.hstack(bp)
-            c[1] = c[1]/ np.hstack(bp)
+            c[0] = c[0]/ np.hstack(self.bp)
+            c[1] = c[1]/ np.hstack(self.bp)
 
-            self.vbp = c.as_matrix().reshape(np.stack(a-b).shape)
+            self.vbp = c.as_matrix().reshape(1192L,31409L,2)
 
         except RuntimeError:
             print('Runtime error is raised')
             raise
 
     def calculate_pbc(self):
+        def foo(x):
+                return cdist(np.matrix(self.vbc[x]),self.vbp[x,:],lambda u,v: np.arccos(np.dot(u,v)))[0]
 
         try:
-            vbc = self.basepath.vbc.as_matrix()
-            pbc = map(lambda x: cdist(np.matrix(vbc[x]), self.vbp[x],lambda u,v: np.arccos(np.dot(u,v))), range(1,len(vbc)))
-            self.pbc = np.stack(pbc)
+            
+            self.vbc = self.basepath.vbc.as_matrix()
+            self.vbc[0] = [np.nan,np.nan]
+            #vbc = self.vbc[1:]
+            self.pbc = [foo(x) for x in range(len(self.vbc))]
+            self.pbc = np.stack(self.pbc)
         except RuntimeError:
             print('Runtime error is raised')
             raise
@@ -57,15 +75,15 @@ class Transformation(object):
     def calculate_pto(self):
         try:
             vbc = self.basepath.vbc.as_matrix()
-            mtp1 = vbc * np.cos(self.pbc).T
-            mtp2 = np.multiply(self.bp[:-1].T,mtp1)
-            coord = self.basepath[['E','N']].as_matrix()
-            self.pto = map(lambda x: coord[:-1][x]+ list(mtp2.T[x]),range(len(coord[:-1])))
+            self.mtp1 = vbc[1:] * np.cos(self.pbc[1:]).T
+            self.mtp2 = np.multiply(self.bp[:-1].T,self.mtp1)
+            self.coord = self.basepath[['E','N']].as_matrix()
+            self.pto = map(lambda x: self.coord[:-1][x]+ list(self.mtp2.T[x]),range(len(self.coord[:-1])))
         except RuntimeError:
             print('Runtime error is raised')
             raise
 
-    def vmod(self):
+    def vmod(self,x):
 
         return np.sqrt((x*x).sum(axis=1))
 
@@ -77,7 +95,7 @@ class Transformation(object):
             cd1 = map(lambda i: np.array(self.vmod(coord[:-1][i]- self.pto[i])), range(len(coord[:-1])))
             # Distancia Pto - C
             cd2 = map(lambda i: np.array(self.vmod(coord[1:][i] - self.pto[i])), range(len(coord[1:])))
-            # Distancia C - B
+            # Distancia C - Ba
             cd3 = self.vmod(coord[1:] - coord[:-1])
             # Refatorando o vetor cd3 para o tamanho de cd4
             cd3_2 = np.stack([cd3] * len(self.basegrid))
@@ -85,10 +103,19 @@ class Transformation(object):
             cd4 = np.array(cd1) + np.array(cd2)
             # cd4 - cd3 (soma cd1 cd2)
             cd5 = pd.DataFrame(cd4 - cd3_2.T)
+            # Distanca
+            bp = pd.DataFrame(self.bp)
 
-            self.basegrid['id_basepath'] = cd5[cd5<0.00000001].idxmin()
-            self.basegrid['id_basepath'][self.basegrid['id_basepath'].isnull()] = 0
-            self.basegrid['id_basepath'] = self.basegrid['id_basepath'].astype(int)
+            self.cd1 = cd1
+            self.cd2 = cd2
+            self.cd3 = cd3
+            self.cd4 = cd4
+            self.cd5 = cd5
+
+            self.basegrid.loc[:,'id_basepath'] = bp[bp < self.maximum_search_parameter][self.cd5<self.search_tolerance].idxmin()#cd5[pd.DataFrame(self.bp) < 400][cd5<0.00000001].idxmin()
+            self.basegrid.loc[:,'id_basepath'][self.basegrid['id_basepath'].isnull()] = bp[bp < self.maximum_search_parameter].idxmin()
+            self.basegrid.loc[:,'id_basepath'][self.basegrid['id_basepath'].isnull()] = 0
+            self.basegrid.loc[:,'id_basepath'] = self.basegrid['id_basepath'].astype(int)
 
         except RuntimeError:
             print('Runtime error is raised')
@@ -97,10 +124,10 @@ class Transformation(object):
     def set_pto(self):
 
         try:
-            self.basegrid['ptoE'] = np.nan
-            self.basegrid['ptoN'] = np.nan
+            self.basegrid.loc[:,('ptoE')] = np.nan
+            self.basegrid.loc[:,('ptoN')] = np.nan
 
-            self.basegrid[['ptoE', 'ptoN']] = np.array(self.pto)[self.basegrid['id_basepath'], range(len(self.basegrid['id_basepath']))]
+            self.basegrid.loc[:,['ptoE', 'ptoN']] = np.array(self.pto)[self.basegrid['id_basepath'], range(len(self.basegrid['id_basepath']))]
         except RuntimeError:
             print('Runtime error is raised')
             raise
@@ -111,19 +138,19 @@ class Transformation(object):
             bN = np.stack([self.basepath.N[:-1]] * len(self.basegrid)).T
             cE = np.stack([self.basepath.E[1:]] * len(self.basegrid)).T
             cN = np.stack([self.basepath.N[1:]] * len(self.basegrid)).T
-            pE = np.stack([self.basegrid.X] * len(cE))
-            pN = np.stack([self.basegrid.Y] * len(cE))
+            pE = np.stack([self.basegrid.E] * len(cE))
+            pN = np.stack([self.basegrid.N] * len(cE))
             pst = np.sign(np.multiply(cE - bE, pN - bN) - np.multiply(cN - bN, pE - bE))
-            self.basegrid.position = pst
+            position = np.array(pst)[self.basegrid.id_basepath,range(len(self.basegrid))]
+            self.basegrid.position = position
         except RuntimeError:
             print('Runtime error is raised')
             raise
 
     def set_d(self):
         try:
-            d = np.array(self.bp)[self.basegrid['id_basepath'],
-                                  range(len(self.basegrid['id_basepath']))] * np.sin(np.array(self.pbc)[self.basegrid['id_basepath'],
-                                                                                                        range(len(self.basegrid['id_basepath']))])
+            idb = self.basegrid['id_basepath']
+            d = np.array(self.bp)[idb,range(len(idb))] * np.sin(np.array(self.pbc)[idb, range(len(idb))])
             self.basegrid['d'] = d * self.basegrid.position
         except RuntimeError:
             print('Runtime error is raised')
@@ -150,18 +177,52 @@ class Transformation(object):
         plt.scatter(self.basegrid.s[self.basegrid.s.notnull()], self.basegrid.d[self.basegrid.s.notnull()])
         plt.show()
 
+    def plot_result(self):
+        plt.figure(figsize=(20, 20))
+        plt.scatter(self.basegrid.E, self.basegrid.N, c = self.basegrid.s)
+        plt.scatter(self.basepath.E, self.basepath.N, c = self.basepath.Dist, edgecolor = None)
+        plt.show()
+
     def run(self):
 
+        from datetime import datetime
+        startTime = datetime.now()
+
+        #do something
+
+        print datetime.now() - startTime
+
         self.calculate_bp()
-        self.calculate_vbp()
+        print(u'\u2713'+' calculate_bp')
+        print datetime.now() - startTime
+        self.calculate_vbp_old()
+        print(u'\u2713'+' calculate_vbp')
+        print datetime.now() - startTime
         self.calculate_pbc()
+        print(u'\u2713'+' calculate_pbc')
+        print datetime.now() - startTime
         self.calculate_pto()
+        print(u'\u2713'+' calculate_pto')
+        print datetime.now() - startTime
         self.set_index_correlation()
+        print(u'\u2713'+' set_index_correlation')
+        print datetime.now() - startTime
         self.set_pto()
+        print(u'\u2713'+' set_pto')
+        print datetime.now() - startTime
         self.set_position()
+        print(u'\u2713'+' set_position')
+        print datetime.now() - startTime
         self.set_d()
+        print(u'\u2713'+' set_d')
+        print datetime.now() - startTime
         self.set_s()
+        print(u'\u2713'+' set_s')
+        print datetime.now() - startTime
         self.plot_s_d()
+        print datetime.now() - startTime
+        self.plot_result()
+
 
 
 

@@ -18,3 +18,18 @@ class Basegrid(object):
         except ValueError:
             print "Oops!  The provided (x,y) column names do not exist.  Try again..."
 
+    def load_shp(self, path):
+        """Load csv"""
+        try:
+            import geopandas as gpd
+        except RuntimeError:
+            print('Need geopandas for that. Try: pip install geopandas')
+            raise
+
+        self.basegrid = gpd.read_file(path)
+        try:
+            self.basegrid.loc[:,('E')] = map(lambda p: self.basegrid.geometry.get_values()[p].x, range(len(self.basegrid)))
+            self.basegrid.loc[:,('N')] = map(lambda p:self.basegrid.geometry.get_values()[p].y, range(len(self.basegrid)))
+        except ValueError:
+            print "Oops!  The provided file does not have a proper (x,y) geometry column.  Try again..."
+
