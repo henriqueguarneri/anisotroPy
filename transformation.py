@@ -3,6 +3,8 @@ import math
 import numpy as np
 from scipy.spatial.distance import cdist, pdist
 import matplotlib.pyplot as plt
+import gc
+
 
 
 class Transformation(object):
@@ -31,7 +33,7 @@ class Transformation(object):
         vbpY = cdist(self.basepath[['N']].as_matrix(), self.basegrid[['N']].as_matrix(),lambda u, v: u-v)/self.bp
         a=vbpX
         b=vbpY
-        self.vbp = np.dstack([a.ravel(),b.ravel()])[0].reshape(1192L,31409L,2)
+        self.vbp = np.dstack([a.ravel(),b.ravel()])[0].reshape(len(self.basepath),len(self.basegrid),2)
 
     
     def calculate_vbp(self):
@@ -42,7 +44,7 @@ class Transformation(object):
 
         try:
             a = np.stack([self.basepath[['E', 'N']].as_matrix()]*len(self.basegrid))
-            b = np.stack([self.basegrid[['E', 'N']].as_matrix()]*len(self.basepath)).reshape(31409,1192,2)
+            b = np.stack([self.basegrid[['E', 'N']].as_matrix()]*len(self.basepath)).reshape(len(self.basegrid),len(self.basepath),2)
 
             self.a = a
             self.b = b
@@ -51,7 +53,7 @@ class Transformation(object):
             c[0] = c[0]/ np.hstack(self.bp)
             c[1] = c[1]/ np.hstack(self.bp)
 
-            self.vbp = c.as_matrix().reshape(1192L,31409L,2)
+            self.vbp = c.as_matrix().reshape(len(self.basepath),len(self.basegrid),2)
 
         except RuntimeError:
             print('Runtime error is raised')
@@ -127,7 +129,8 @@ class Transformation(object):
             self.basegrid.loc[:,('ptoE')] = np.nan
             self.basegrid.loc[:,('ptoN')] = np.nan
 
-            self.basegrid.loc[:,['ptoE', 'ptoN']] = np.array(self.pto)[self.basegrid['id_basepath'], range(len(self.basegrid['id_basepath']))]
+            #pto = np.array(self.pto).reshape(len(self.basepath),len(self.basegrid))
+            self.basegrid.loc[:,['ptoE', 'ptoN']] = np.array(self.pto)[self.basegrid['id_basepath']-1, range(len(self.basegrid['id_basepath']))]
         except RuntimeError:
             print('Runtime error is raised')
             raise
@@ -141,7 +144,7 @@ class Transformation(object):
             pE = np.stack([self.basegrid.E] * len(cE))
             pN = np.stack([self.basegrid.N] * len(cE))
             pst = np.sign(np.multiply(cE - bE, pN - bN) - np.multiply(cN - bN, pE - bE))
-            position = np.array(pst)[self.basegrid.id_basepath,range(len(self.basegrid))]
+            position = np.array(pst)[self.basegrid.id_basepath-1,range(len(self.basegrid))]
             self.basegrid.position = position
         except RuntimeError:
             print('Runtime error is raised')
@@ -173,55 +176,118 @@ class Transformation(object):
 
     def plot_s_d(self):
 
-        plt.figure(figsize=(20, 20))
-        plt.scatter(self.basegrid.s[self.basegrid.s.notnull()], self.basegrid.d[self.basegrid.s.notnull()])
+        plt.figure(figsize=(10, 10))
+        plt.scatter(self.basegrid.s[self.basegrid.s.notnull()], self.basegrid.d[self.basegrid.s.notnull()],
+            c = self.basegrid.d[self.basegrid.s.notnull()],edgecolor='face')
         plt.show()
 
     def plot_result(self):
-        plt.figure(figsize=(20, 20))
-        plt.scatter(self.basegrid.E, self.basegrid.N, c = self.basegrid.s)
-        plt.scatter(self.basepath.E, self.basepath.N, c = self.basepath.Dist, edgecolor = None)
+        plt.figure(figsize=(10, 10))
+        plt.scatter(self.basegrid.E, self.basegrid.N, c = self.basegrid.s, edgecolor='face')
+        plt.scatter(self.basepath.E, self.basepath.N, c = self.basepath.Dist, edgecolor='face')
         plt.show()
 
-    def run(self):
+    def plot_final(self):
+        import matplotlib.gridspec as gridspec
+
+        def plot_width(df,buff=100):
+            return (df.d.astype('float')>-buff)&(df.d.astype('float')<buff)
+
+        fig = plt.figure(figsize=(9.5,6))
+        gs = gridspec.GridSpec(2,1,height_ratios=[4,1])
+
+        ax0 = plt.subplot(gs[0])
+        p0 = plt.scatter(
+                        self.basegrid.E[plot_width(self.basegrid)].tolist(),
+                        self.basegrid.N[plot_width(self.basegrid)].tolist(),
+                        s=3,
+                        edgecolors='none',
+                        )
+        p01 = plt.plot(
+                        self.basepath.E,
+                        self.basepath.N,
+                        'black',
+                        ls='-.',
+                        lw=1,
+                        label='s - line')
+        plt.legend()
+        ax0.set_xlabel('E (m)')
+        ax0.set_ylabel('N (m)')
+
+        ax1 = plt.subplot(gs[1])
+        p0 = plt.scatter(
+                        self.basegrid.s[plot_width(self.basegrid)].tolist(),
+                        self.basegrid.d[plot_width(self.basegrid)].tolist(),
+                        s=3,
+                        edgecolors='none',
+                        )
+        plt.plot([0,self.basepath.Dist.max()],[0,0],'black',ls='-.',lw=1)
+        ax1.set_xlabel('s (m)')
+        ax1.set_ylabel('d (m)')
+        plt.show()
+
+    def run(self, progressbar = None):
 
         from datetime import datetime
         startTime = datetime.now()
-
+        global progress_counter
+        progress_counter = 0
+        def counter(progress):
+            global progress_counter
+            progress_counter+=1
+            progress.setValue(progress_counter)
         #do something
 
         print datetime.now() - startTime
-
+        counter(progressbar)
         self.calculate_bp()
-        print(u'\u2713'+' calculate_bp')
+        print(' calculate_bp')
+        gc.collect()
         print datetime.now() - startTime
+        counter(progressbar)
         self.calculate_vbp_old()
-        print(u'\u2713'+' calculate_vbp')
+        print(' calculate_vbp')
         print datetime.now() - startTime
+        gc.collect()
         self.calculate_pbc()
-        print(u'\u2713'+' calculate_pbc')
+        counter(progressbar)
+        print(' calculate_pbc')
         print datetime.now() - startTime
+        gc.collect()
         self.calculate_pto()
-        print(u'\u2713'+' calculate_pto')
+        counter(progressbar)
+        print(' calculate_pto')
         print datetime.now() - startTime
+        gc.collect()
         self.set_index_correlation()
-        print(u'\u2713'+' set_index_correlation')
+        counter(progressbar)
+        print(' set_index_correlation')
         print datetime.now() - startTime
+        gc.collect()
         self.set_pto()
-        print(u'\u2713'+' set_pto')
+        print(' set_pto')
+        counter(progressbar)
         print datetime.now() - startTime
+        gc.collect()
         self.set_position()
-        print(u'\u2713'+' set_position')
+        counter(progressbar)
+        print(' set_position')
         print datetime.now() - startTime
+        gc.collect()
         self.set_d()
-        print(u'\u2713'+' set_d')
+        counter(progressbar)
+        print(' set_d')
         print datetime.now() - startTime
+        gc.collect()
         self.set_s()
-        print(u'\u2713'+' set_s')
+        counter(progressbar)
+        print(' set_s')
         print datetime.now() - startTime
-        self.plot_s_d()
+        gc.collect()
+        self.plot_final()
+        counter(progressbar)
         print datetime.now() - startTime
-        self.plot_result()
+        gc.collect()
 
 
 
