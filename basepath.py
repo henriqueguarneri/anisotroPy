@@ -3,7 +3,7 @@ import math
 import numpy as np
 
 class Basepath(object):
-    basepath = None
+
 
     def __int__(self):
         pass

@@ -1,5 +1,5 @@
-import pandas as pd
 import math
+import pandas as pd
 import numpy as np
 from scipy.spatial.distance import cdist, pdist
 import matplotlib.pyplot as plt
@@ -232,11 +232,16 @@ class Transformation(object):
         startTime = datetime.now()
         global progress_counter
         progress_counter = 0
+        
         def counter(progress):
-            global progress_counter
-            progress_counter+=1
-            progress.setValue(progress_counter)
-        #do something
+
+            if progress != None:
+                global progress_counter
+                progress_counter+=1
+                progress.setValue(progress_counter)
+            else:
+                pass
+
 
         print datetime.now() - startTime
         counter(progressbar)
