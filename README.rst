@@ -6,7 +6,7 @@ Anisotropic Transformation for Python.
 The code suport anisotropic coordinate transformation over metric coordinate systems.
 The implementation details are available in Guarneri (2017).
 
-AnisotroPy is the base for the Qgis Plug-in, further details are available in Guarneri (2018). 
+AnisotroPy is the base for the Qgis Plug-in, further details are available in https://github.com/henriqueguarneri/qgis-anyform-plugin. 
 
 AnisotroPy uses the BSD 3-Clause License.
 
@@ -28,6 +28,7 @@ A small example script showing the usage of the AnyForm transformation.
 
 
 .. code:: python
+
 	# Input values creation
     x = np.array([ 1.5,  1.,  1.,  2.,  2.,  4.,  4.,  3., 3.])
     y = np.array([ 0.,  1.,  3.,  4.,  2.,  3.,  2.,  1., 0.])
