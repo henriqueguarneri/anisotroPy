@@ -14,15 +14,9 @@ Anitropic Transformation Example
 
 A small example script showing the usage of the AnyForm transformation.
 
-.. code:: python
-
-    import sys
-    sys.path.append(r'/home/user/.qgis2/python/plugins/AnyForm/')
 
 .. code:: python
 
-    %matplotlib inline
-    
     from anisotroPy import basegrid, basepath, transformation
     import numpy as np
     import matplotlib.pyplot as plt
@@ -31,24 +25,6 @@ A small example script showing the usage of the AnyForm transformation.
     import scipy.interpolate
     import pandas as pd
 
-.. code:: python
-
-    reload(basepath)
-    reload(transformation)
-
-
-
-
-.. parsed-literal::
-
-    <module 'anisotroPy.transformation' from '/home/user/.qgis2/python/plugins/AnyForm/anisotroPy/transformation.pyc'>
-
-
-
-.. code:: python
-
-    # Make this example reproducible:
-    np.random.seed(89239413)
 
 .. code:: python
 
@@ -81,9 +57,13 @@ A small example script showing the usage of the AnyForm transformation.
 
 .. code:: python
 
+	# Set grid
+
     grid = zip(x1+random_x-0.5,y1+random_y-0.5)
 
 .. code:: python
+	
+	# Set path
 
     path = zip(x1[::40],y1[::40])
 
@@ -112,34 +92,6 @@ A small example script showing the usage of the AnyForm transformation.
     trg.run()
     #   Save the transformed basegrid to a csv file.
     #bg.basegrid.to_csv('bathymetry_out.csv', sep='\s')
-
-
-.. parsed-literal::
-
-    Avarage interval between path points:
-    0.0501023763602
-    bc calculated successfully
-    vbc calculated successfully
-    0:00:00.000016
-     calculate_bp
-    0:00:00.054509
-     calculate_vbp
-    0:00:05.788423
-     calculate_pbc
-    0:00:11.066100
-     calculate_pto
-    0:00:15.418480
-     set_index_correlation
-    0:00:16.323687
-     set_pto
-    0:00:16.367635
-     set_position
-    0:00:16.765374
-     set_d
-    0:00:16.810538
-     set_s
-    0:00:16.906518
-
 
 
 .. image:: output_8_1.png
@@ -197,17 +149,3 @@ A small example script showing the usage of the AnyForm transformation.
 
 
 .. image:: output_9_0.png
-
-
-.. code:: python
-
-    # Percentage of grid points that got attributed a set of transformed coordinates.
-    # See the discretization sensibility test example to learn more.
-    len(bg.basegrid[bg.basegrid.s.notnull()])/len(bg.basegrid)
-
-
-
-
-.. parsed-literal::
-
-    0.9365
