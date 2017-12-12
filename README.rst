@@ -6,7 +6,9 @@ Anisotropic Transformation for Python.
 The code suport anisotropic coordinate transformation over metric coordinate systems.
 The implementation details are available in Guarneri (2017).
 
-AnisotroPy is the base for the Qgis Plug-in, further details are available in https://github.com/henriqueguarneri/qgis-anyform-plugin. 
+AnisotroPy is the base for the Qgis Plug-in AnyForm, further details are available in https://github.com/henriqueguarneri/qgis-anyform-plugin.
+
+It can be used in a variaty of scenarios. It has be used to align river bathymetric anisotropy for interpolations in the transformed coordinate system (Thomas, 2015) and for linear interpolation of water levels along river channels (Guarneri, 2015)
 
 AnisotroPy uses the BSD 3-Clause License.
 
@@ -90,13 +92,9 @@ A small example script showing the usage of the AnyForm transformation.
     #   Save the transformed basegrid to a csv file.
     #bg.basegrid.to_csv('bathymetry_out.csv', sep='\s')
 
-
+Result
 .. image:: output_8_1.png
 
-
-.. parsed-literal::
-
-    0:00:17.498240
 
 
 .. code:: python
@@ -152,3 +150,5 @@ References
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 Guarneri, H. (2017) Methods for the Analysis and Design of Inland Waterways and Application for the Paraguay River Waterway. Master Dissertation. Federal University of Paraná.
+
+Guarneri, H. et. al (2015) Elevation Model Determination for Rivers of Great Extensions. Case Study: The Brazilian Stretch of the Paraguay River Waterway. October 2015. Conference: 9o Seminário de Transporte e Desenvolvimento Hidroviário Interior SOBENA 2015, At Manaus-AM, Volume: 1
