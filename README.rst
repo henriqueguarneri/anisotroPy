@@ -29,7 +29,7 @@ A small example script showing the usage of the AnyForm transformation.
 
 .. code:: python
 
-	# Input values creation
+    # Input values creation
     x = np.array([ 1.5,  1.,  1.,  2.,  2.,  4.,  4.,  3., 3.])
     y = np.array([ 0.,  1.,  3.,  4.,  2.,  3.,  2.,  1., 0.])
     
@@ -56,12 +56,12 @@ A small example script showing the usage of the AnyForm transformation.
 
 .. code:: python
 
-	# Set grid
+    # Set grid
     grid = zip(x1+random_x-0.5,y1+random_y-0.5)
 
 .. code:: python
 	
-	# Set path
+    # Set path
     path = zip(x1[::40],y1[::40])
 
 .. code:: python
