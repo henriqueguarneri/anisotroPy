@@ -3,8 +3,9 @@ AnisotroPy
 
 Anisotropic Transformation for Python.
 
-The code suport anisotropic coordinate transformation over a metric coordinate system.
+The code suport anisotropic coordinate transformation over metric coordinate systems.
 The implementation details are available in Guarneri (2017).
+
 AnisotroPy is the base for the Qgis Plug-in, further details are available in Guarneri (2018). 
 
 Any form uses the BSD 3-Clause License.
@@ -27,7 +28,7 @@ A small example script showing the usage of the AnyForm transformation.
 
 
 .. code:: python
-
+	# Input values creation
     x = np.array([ 1.5,  1.,  1.,  2.,  2.,  4.,  4.,  3., 3.])
     y = np.array([ 0.,  1.,  3.,  4.,  2.,  3.,  2.,  1., 0.])
     
@@ -40,8 +41,6 @@ A small example script showing the usage of the AnyForm transformation.
     y1 = scipy.interpolate.spline(t, y, nt)
     plt.plot(x1, y1, label='Path',lw=0.5)
     
-    
-    
     random_x = np.random.random(len(x1))
     random_y = np.random.random(len(y1))
     
@@ -51,20 +50,17 @@ A small example script showing the usage of the AnyForm transformation.
     plt.show()
 
 
-
 .. image:: output_5_0.png
 
 
 .. code:: python
 
 	# Set grid
-
     grid = zip(x1+random_x-0.5,y1+random_y-0.5)
 
 .. code:: python
 	
 	# Set path
-
     path = zip(x1[::40],y1[::40])
 
 .. code:: python
@@ -149,3 +145,9 @@ A small example script showing the usage of the AnyForm transformation.
 
 
 .. image:: output_9_0.png
+
+
+References
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Guarneri, H. (2017) Methods for the Analysis and Design of Inland Waterways and Application for the Paraguay River Waterway. Master Dissertation. Federal University of Paraná.
