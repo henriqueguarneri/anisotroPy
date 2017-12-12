@@ -6,7 +6,8 @@ class Basepath(object):
 
 
     def __int__(self):
-        pass
+        
+        self.basepath = pd.DataFrame()
 
     def load_layer(self, layer):
 

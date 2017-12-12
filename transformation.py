@@ -168,7 +168,7 @@ class Transformation(object):
 
             self.basegrid['sincrement'] = s_increment
             self.basegrid['sB'] = s_b
-            self.basegrid['s'] = s_b + s_increment
+            self.basegrid['s'] = s_b - s_increment # BUG: There is something to be done about the increment sign. Can it be positive or negative (Change it and see the basic example)
         except RuntimeError:
             print('Runtime error is raised')
             raise
