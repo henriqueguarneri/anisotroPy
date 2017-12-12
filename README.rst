@@ -6,14 +6,14 @@ Anisotropic Transformation for Python.
 The code suport anisotropic coordinate transformation over metric coordinate systems.
 The implementation details are available in Guarneri (2017).
 
-AnisotroPy is the base for the Qgis Plug-in AnyForm, further details are available in https://github.com/henriqueguarneri/qgis-anyform-plugin.
+AnisotroPy is the base of the Qgis Plug-in AnyForm, further details are available in https://github.com/henriqueguarneri/qgis-anyform-plugin.
 
-It can be used in a variaty of scenarios. It has be used to align river bathymetric anisotropy for interpolations in the transformed coordinate system (Thomas, 2015) and for linear interpolation of water levels along river channels (Guarneri, 2015)
+It can be used in a variaty of scenarios. It has been used to align river bathymetric anisotropy for interpolations in the transformed coordinate system and for linear interpolation of water levels along river channels (Guarneri, 2015)
 
 AnisotroPy uses the BSD 3-Clause License.
 
 Anitropic Transformation Example
-^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A small example script showing the usage of the AnyForm transformation.
 
