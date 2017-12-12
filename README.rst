@@ -8,7 +8,7 @@ The implementation details are available in Guarneri (2017).
 
 AnisotroPy is the base for the Qgis Plug-in, further details are available in Guarneri (2018). 
 
-Any form uses the BSD 3-Clause License.
+AnisotroPy uses the BSD 3-Clause License.
 
 Anitropic Transformation Example
 ^^^^^^^^^^^^^^^^^^^^^^^^
