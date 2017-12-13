@@ -8,7 +8,7 @@ The implementation details are available in Guarneri (2017).
 
 AnisotroPy is the base of the Qgis Plug-in AnyForm, further details are available in https://github.com/henriqueguarneri/qgis-anyform-plugin.
 
-It can be used in a variaty of scenarios. It has been used to align river bathymetric anisotropy for interpolations in the transformed coordinate system and for linear interpolation of water levels along river channels (Guarneri, 2015)
+It can be used in a variaty of scenarios. It has been used to align river bathymetric anisotropy for interpolations in the transformed coordinate system and for linear interpolation of water levels along river channels (Guarneri, 2015).
 
 AnisotroPy uses the BSD 3-Clause License.
 
@@ -93,6 +93,7 @@ A small example script showing the usage of the AnyForm transformation.
     #bg.basegrid.to_csv('bathymetry_out.csv', sep='\s')
 
 Result
+
 .. image:: output_8_1.png
 
 
