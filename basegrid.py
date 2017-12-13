@@ -9,6 +9,7 @@ Defines the Basegrid object to be used by the class Transformation.
 import pandas as pd
 
 #pylint: disable=no-name-in-module
+#pylint: disable=no-member
 class Basegrid(object):
     """Basegrid object can read from csv, shapefile or Qgis Layer.
 
