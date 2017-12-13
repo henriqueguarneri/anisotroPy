@@ -2,7 +2,7 @@
 """
 Basegrid
 
-Sets the Basegrid object to be used by the class Transformation.
+Defines the Basegrid object to be used by the class Transformation.
 
 """
 
